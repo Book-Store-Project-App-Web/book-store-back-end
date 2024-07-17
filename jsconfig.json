@@ -1,0 +1,7 @@
+/**DatDev*/ {
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  }
+}
