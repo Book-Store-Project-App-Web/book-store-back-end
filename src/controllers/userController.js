@@ -6,7 +6,7 @@ const createUser = async (req, res, next) => {
     await userService.createNew(req.body)
     return res.status(StatusCodes.CREATED).json({ message: 'Successfully' })
   } catch (error) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'some thing wrong' })
+    next(error)
   }
 }
 
@@ -15,7 +15,7 @@ const getAllUser = async (req, res, next) => {
     const users = await userService.getAll()
     return res.status(StatusCodes.CREATED).json(users)
   } catch (error) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'some thing wrong' })
+    next(error)
   }
 }
 
@@ -24,7 +24,7 @@ const getUser = async (req, res, next) => {
     const user = await userService.getDetail(req.params.id)
     return res.status(StatusCodes.CREATED).json(user)
   } catch (error) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'some thing wrong' })
+    next(error)
   }
 }
 
@@ -33,7 +33,7 @@ const updateUser = async (req, res, next) => {
     await userService.updateDetail(req.params.id, req.body)
     return res.status(StatusCodes.CREATED).json({ message: 'Successfully' })
   } catch (error) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'some thing wrong' })
+    next(error)
   }
 }
 
@@ -42,7 +42,7 @@ const deleteUser = async (req, res, next) => {
     await userService.deleteDetail(req.params.id)
     return res.status(StatusCodes.CREATED).json({ message: 'Successfully' })
   } catch (error) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'some thing wrong' })
+    next(error)
   }
 }
 
