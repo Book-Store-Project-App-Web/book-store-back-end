@@ -6,7 +6,7 @@ const signup = async (req, res, next) => {
     await authService.signup(req.body)
     return res.status(StatusCodes.CREATED).json({ message: 'Successfully' })
   } catch (error) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'some thing wrong' })
+    next(error)
   }
 }
 
