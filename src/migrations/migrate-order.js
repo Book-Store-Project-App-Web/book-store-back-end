@@ -10,15 +10,19 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       userId: {
+        allowNull: false,
         type: Sequelize.INTEGER
       },
       fullName: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       phone: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       address: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       orderTotal: {

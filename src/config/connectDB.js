@@ -3,7 +3,7 @@ import { env } from './environment'
 
 const sequelize = new Sequelize(env.DATABASE_NAME, env.DATABASE_USER_NAME, env.DATABASE_USER_PASSWORD, {
   host: env.LOCAL_DEV_APP_HOST,
-  dialect: 'mysql'
+  dialect: 'mssql'
 })
 
 const connectDB = async () => {
