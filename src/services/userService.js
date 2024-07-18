@@ -1,8 +1,14 @@
+import bcrypt from 'bcryptjs'
+
 import db from '~/models'
 
 const createNew = async (reqBody) => {
   try {
-    return await db.User.create(reqBody)
+    const newUser = {
+      ...reqBody,
+      password: await bcrypt.hash(reqBody.password, 12)
+    }
+    return await db.User.create(newUser)
   } catch (error) {
     throw error
   }

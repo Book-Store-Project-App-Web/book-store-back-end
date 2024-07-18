@@ -3,8 +3,9 @@
     "username": "sa",
     "password": "123",
     "database": "book_store",
-    "host": "127.0.0.1",
-    "dialect": "mssql"
+    "host": "localhost",
+    "dialect": "mssql",
+    "logging": false
   },
   "test": {
     "username": "root",
