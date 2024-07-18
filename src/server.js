@@ -1,4 +1,6 @@
 import express from 'express'
+import cookieParser from 'cookie-parser'
+
 import connectDB from '~/config/connectDB'
 import { env } from '~/config/environment'
 import { APIs } from '~/routes'
@@ -9,6 +11,7 @@ const app = express()
 // --------------------CONNECT MYSQL----------------------
 connectDB()
 // --------------------CONFIG APP----------------------
+app.use(cookieParser())
 app.use(express.json({ limit: '10kb' }))
 
 app.use('/api', APIs)
