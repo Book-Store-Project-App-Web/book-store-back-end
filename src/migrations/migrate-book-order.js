@@ -10,9 +10,11 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       bookId: {
+        allowNull: false,
         type: Sequelize.INTEGER
       },
       orderId: {
+        allowNull: false,
         type: Sequelize.INTEGER
       },
       quantity: {

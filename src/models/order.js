@@ -14,9 +14,18 @@ module.exports = (sequelize, DataTypes) => {
   }
   Order.init(
     {
-      fullName: DataTypes.STRING,
-      phone: DataTypes.STRING,
-      address: DataTypes.STRING,
+      fullName: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      phone: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      address: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
       orderTotal: DataTypes.DOUBLE
     },
     {

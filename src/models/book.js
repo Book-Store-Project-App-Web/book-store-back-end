@@ -14,11 +14,26 @@ module.exports = (sequelize, DataTypes) => {
   }
   Book.init(
     {
-      name: DataTypes.STRING,
-      author: DataTypes.STRING,
-      price: DataTypes.DOUBLE,
-      discount: DataTypes.DOUBLE,
-      stock: DataTypes.INTEGER,
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      author: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      price: {
+        type: DataTypes.DOUBLE,
+        allowNull: false
+      },
+      discount: {
+        type: DataTypes.DOUBLE,
+        allowNull: false
+      },
+      stock: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
       totalRating: DataTypes.INTEGER,
       sold: DataTypes.INTEGER,
       ratingsAverage: DataTypes.DOUBLE

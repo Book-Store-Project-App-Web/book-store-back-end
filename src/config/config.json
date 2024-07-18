@@ -1,11 +1,10 @@
 {
   "development": {
-    "username": "root",
-    "password": "mysql",
+    "username": "sa",
+    "password": "123",
     "database": "book_store",
     "host": "127.0.0.1",
-    "dialect": "mysql",
-    "logging": false
+    "dialect": "mssql"
   },
   "test": {
     "username": "root",

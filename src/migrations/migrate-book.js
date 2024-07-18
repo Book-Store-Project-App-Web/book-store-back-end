@@ -10,18 +10,22 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       name: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       author: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       price: {
+        allowNull: false,
         type: Sequelize.DOUBLE
       },
       discount: {
         type: Sequelize.DOUBLE
       },
       stock: {
+        allowNull: false,
         type: Sequelize.INTEGER
       },
       totalRating: {
