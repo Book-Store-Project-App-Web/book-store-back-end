@@ -90,4 +90,48 @@ const updateMe = async (userId, reqBody) => {
   }
 }
 
-export const userService = { createNew, getAll, getDetail, updateDetail, deleteDetail, updatePassword, updateMe }
+const addCartUser = async (userId, reqBody) => {
+  const { bookId, quantity } = reqBody
+  try {
+    let cart = await db.Cart.findOne({ where: { userId } })
+
+    if (!cart) {
+      cart = await db.Cart.create({ userId })
+    }
+
+    let bookCart = await db.Book_Cart.findOne({ where: { cartId: cart.id, bookId } })
+
+    if (bookCart) {
+      bookCart.quantity += quantity
+      await bookCart.save()
+    } else {
+      return await db.Book_Cart.create({ cartId: cart.id, book_id: bookId, quantity })
+    }
+    // return bookCart
+  } catch (error) {
+    throw error
+  }
+}
+
+const cartSummary = async (userId) => {
+  try {
+    const cart = await db.Cart.findOne({ where: { userId }, include: [{ model: db.Book, through: { attributes: ['quantity'] } }] })
+
+    if (!cart) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Cart not found!')
+    }
+
+    // let totalQuantity = 0
+    // let totalPrice = 0
+
+    // cart.Book.forEach((book) => {
+    //   console.log(book)
+    //   // totalQuantity += book.CartProduct.quantity
+    //   // totalPrice += book.CartProduct.quantity * book.price
+    // })
+  } catch (error) {
+    throw error
+  }
+}
+
+export const userService = { createNew, getAll, getDetail, updateDetail, deleteDetail, updatePassword, updateMe, addCartUser, cartSummary }
