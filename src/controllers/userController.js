@@ -65,4 +65,22 @@ const updateMe = async (req, res, next) => {
   }
 }
 
-export const userController = { createUser, getAllUser, getUser, updateUser, deleteUser, updatePassword, updateMe }
+const addCartUser = async (req, res, next) => {
+  try {
+    await userService.addCartUser(req.user.id, req.body)
+    return res.status(StatusCodes.OK).json({ message: 'Book added to cart' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const cartSummary = async (req, res, next) => {
+  try {
+    await userService.cartSummary(req.user.id)
+    return res.status(StatusCodes.OK).json({ message: 'Book added to cart' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const userController = { createUser, getAllUser, getUser, updateUser, deleteUser, updatePassword, updateMe, addCartUser, cartSummary }

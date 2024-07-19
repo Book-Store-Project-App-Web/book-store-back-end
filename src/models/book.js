@@ -34,6 +34,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
       },
+      slug: DataTypes.STRING,
       totalRating: DataTypes.INTEGER,
       sold: DataTypes.INTEGER,
       ratingsAverage: DataTypes.DOUBLE

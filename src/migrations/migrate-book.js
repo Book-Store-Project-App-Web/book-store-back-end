@@ -28,6 +28,9 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER
       },
+      slug: {
+        type: Sequelize.STRING
+      },
       totalRating: {
         type: Sequelize.INTEGER
       },
