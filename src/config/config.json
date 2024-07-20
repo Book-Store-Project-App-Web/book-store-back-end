@@ -5,7 +5,10 @@
     "database": "book_store",
     "host": "localhost",
     "dialect": "mssql",
-    "logging": false
+    "logging": false,
+    "define": {
+      "freezeTableName": true
+    }
   },
   "test": {
     "username": "root",

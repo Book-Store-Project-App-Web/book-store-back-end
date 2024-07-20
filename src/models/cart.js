@@ -9,11 +9,20 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Cart.belongsTo(models.User)
-      Cart.belongsToMany(models.Book, { through: 'BookCart' })
+      Cart.belongsToMany(models.Book, { through: 'Book_Cart' })
     }
   }
   Cart.init(
-    {},
+    {
+      totalQuantity: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+      },
+      totalCartPrice: {
+        type: DataTypes.DOUBLE,
+        defaultValue: 0
+      }
+    },
     {
       sequelize,
       modelName: 'Cart'
