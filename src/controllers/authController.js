@@ -4,8 +4,8 @@ import { createSignToken } from '~/utils/createSignToken'
 
 const signup = async (req, res, next) => {
   try {
-    const user = await authService.signup(req.body)
-    createSignToken(user.dataValues, StatusCodes.OK, res)
+    await authService.signup(req.body)
+    return res.status(StatusCodes.CREATED).json({ message: 'Successfully' })
   } catch (error) {
     next(error)
   }

@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Order.belongsTo(models.User)
-      Order.belongsToMany(models.Book, { through: 'BookOrder' })
+      Order.belongsToMany(models.Book, { through: 'Book_Order' })
     }
   }
   Order.init(
@@ -26,7 +26,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false
       },
-      orderTotal: DataTypes.DOUBLE
+      totalOrderPrice: {
+        type: DataTypes.DOUBLE,
+        defaultValue: 0
+      }
     },
     {
       sequelize,

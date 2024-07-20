@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { StatusCodes } from 'http-status-codes'
 
+import { Op } from 'sequelize'
 import db from '~/models'
 import ApiError from '~/utils/ApiError'
 
@@ -93,45 +94,83 @@ const updateMe = async (userId, reqBody) => {
 const addCartUser = async (userId, reqBody) => {
   const { bookId, quantity } = reqBody
   try {
+    // --- 1: Tìm kiếm Cart của User đã đăng nhập
     let cart = await db.Cart.findOne({ where: { userId } })
 
+    // --- 2: Nếu không có thì tạo mới Cart
     if (!cart) {
       cart = await db.Cart.create({ userId })
     }
 
-    let bookCart = await db.Book_Cart.findOne({ where: { cartId: cart.id, bookId } })
+    // --- 3: Tìm tất cả sản phẩm thuộc trong Cart ủa User
+    let bookCart = await db.Book_Cart.findOne({
+      where: {
+        [Op.and]: [{ cartId: cart.id }, { bookId }]
+      }
+    })
 
+    // --- 4: Nếu đã có Book trong Cart thì tăng số lượng lên
     if (bookCart) {
       bookCart.quantity += quantity
       await bookCart.save()
     } else {
-      return await db.Book_Cart.create({ cartId: cart.id, book_id: bookId, quantity })
+      // --- 5: Nếu chưa có Book trong Cart thì thêm mới vào Cart
+      await db.Book_Cart.create({ CartId: cart.id, BookId: bookId, quantity })
     }
-    // return bookCart
+
+    // --- 6:  Tính toán tổng số lượng sản phẩm trong giỏ hàng
+    const booksInCart = await db.Cart.findOne({
+      where: { id: cart.id },
+      attributes: { exclude: ['createdAt', 'updatedAt'] },
+      include: [
+        {
+          model: db.Book,
+          attributes: ['name', 'price'],
+          through: { attributes: ['quantity'] }
+        }
+      ]
+    })
+
+    let totalQuantity = 0
+    let totalPrice = 0
+    booksInCart.Books.forEach((book) => {
+      totalQuantity += 1
+      totalPrice += book.Book_Cart.quantity * book.price
+    })
+    booksInCart.totalQuantity = +totalQuantity
+    booksInCart.totalCartPrice = totalPrice
+    await booksInCart.save()
+
+    return booksInCart
   } catch (error) {
     throw error
   }
 }
 
-const cartSummary = async (userId) => {
+const getMyCart = async (userId) => {
   try {
-    const cart = await db.Cart.findOne({ where: { userId }, include: [{ model: db.Book, through: { attributes: ['quantity'] } }] })
-
+    let cart = await db.Cart.findOne({ where: { userId } })
     if (!cart) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Cart not found!')
     }
+    const bookCart = await db.Cart.findOne({
+      where: { id: cart.id },
+      include: [
+        {
+          model: db.Book,
+          attributes: ['name', 'price'],
+          through: { attributes: ['quantity'] }
+        }
+      ]
+    })
+    if (bookCart.Books.length <= 0) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Chua co san pham trong gio hang')
+    }
 
-    // let totalQuantity = 0
-    // let totalPrice = 0
-
-    // cart.Book.forEach((book) => {
-    //   console.log(book)
-    //   // totalQuantity += book.CartProduct.quantity
-    //   // totalPrice += book.CartProduct.quantity * book.price
-    // })
+    return bookCart
   } catch (error) {
     throw error
   }
 }
 
-export const userService = { createNew, getAll, getDetail, updateDetail, deleteDetail, updatePassword, updateMe, addCartUser, cartSummary }
+export const userService = { createNew, getAll, getDetail, updateDetail, deleteDetail, updatePassword, updateMe, addCartUser, getMyCart }

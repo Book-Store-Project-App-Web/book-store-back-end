@@ -13,15 +13,24 @@ module.exports = (sequelize, DataTypes) => {
   }
   Book_Cart.init(
     {
-      bookId: {
+      BookId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        references: {
+          model: 'Book',
+          key: 'id'
+        }
       },
-      cartId: {
+      CartId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        references: {
+          model: 'Cart',
+          key: 'id'
+        }
       },
-      quantity: DataTypes.INTEGER
+      quantity: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+      }
     },
     {
       sequelize,
