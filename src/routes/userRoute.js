@@ -15,6 +15,7 @@ router.put('/update-me', userController.updateMe)
 // --------------------ADD TO CART--------------
 router.post('/add-to-cart', userController.addCartUser)
 router.get('/my-cart', userController.getMyCart)
+router.post('/order', userController.orderCart)
 
 router.route('/').post(userController.createUser).get(userController.getAllUser)
 router.route('/:id').get(userController.getUser).put(userController.updateUser).delete(userController.deleteUser)

@@ -83,4 +83,13 @@ const getMyCart = async (req, res, next) => {
   }
 }
 
-export const userController = { createUser, getAllUser, getUser, updateUser, deleteUser, updatePassword, updateMe, addCartUser, getMyCart }
+const orderCart = async (req, res, next) => {
+  try {
+    const myOrder = await userService.orderCart(req.user.id, req.body)
+    return res.status(StatusCodes.OK).json(myOrder)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const userController = { createUser, getAllUser, getUser, updateUser, deleteUser, updatePassword, updateMe, addCartUser, getMyCart, orderCart }

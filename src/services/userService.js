@@ -5,6 +5,19 @@ import { Op } from 'sequelize'
 import db from '~/models'
 import ApiError from '~/utils/ApiError'
 
+const getBooksInCartUser = async (cart) => {
+  return await db.Cart.findOne({
+    where: { id: cart.id },
+    attributes: { exclude: ['createdAt', 'updatedAt'] },
+    include: [
+      {
+        model: db.Book,
+        through: { attributes: ['quantity'] }
+      }
+    ]
+  })
+}
+
 const createNew = async (reqBody) => {
   try {
     const newUser = {
@@ -118,22 +131,15 @@ const addCartUser = async (userId, reqBody) => {
       await db.Book_Cart.create({ CartId: cart.id, BookId: bookId, quantity })
     }
 
-    // --- 6:  Tính toán tổng số lượng sản phẩm trong giỏ hàng
-    const booksInCart = await db.Cart.findOne({
-      where: { id: cart.id },
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
-      include: [
-        {
-          model: db.Book,
-          attributes: ['name', 'price'],
-          through: { attributes: ['quantity'] }
-        }
-      ]
-    })
+    // ---6 Tính toán tổng số lượng sản phẩm trong giỏ hàng
+    const booksInCart = await getBooksInCartUser(cart)
 
     let totalQuantity = 0
     let totalPrice = 0
     booksInCart.Books.forEach((book) => {
+      if (book.stock < book.Book_Cart.quantity) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, `Not enough stock for ${book.name}`)
+      }
       totalQuantity += 1
       totalPrice += book.Book_Cart.quantity * book.price
     })
@@ -173,4 +179,56 @@ const getMyCart = async (userId) => {
   }
 }
 
-export const userService = { createNew, getAll, getDetail, updateDetail, deleteDetail, updatePassword, updateMe, addCartUser, getMyCart }
+const orderCart = async (userId, reqBody) => {
+  const { fullName, phone, address } = reqBody
+  const transaction = await db.sequelize.transaction()
+  try {
+    let cart = await db.Cart.findOne({ where: { userId } })
+
+    if (!cart) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Cart not found')
+    }
+
+    const order = await db.Order.create(
+      {
+        userId,
+        fullName,
+        phone,
+        address
+      },
+      { transaction }
+    )
+
+    const booksInCart = await getBooksInCartUser(cart)
+
+    for (const book of booksInCart.Books) {
+      if (book.stock < book.Book_Cart.quantity) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, `Not enough stock for ${book.name}`)
+      }
+
+      await db.Book_Order.create(
+        {
+          OrderId: order.id,
+          BookId: book.id,
+          quantity: book.Book_Cart.quantity
+        },
+        { transaction }
+      )
+      book.stock -= book.Book_Cart.quantity
+      await book.save({ transaction })
+    }
+
+    order.totalOrderPrice = cart.totalCartPrice
+    await order.save({ transaction })
+
+    await db.Cart.destroy({ where: { id: cart.id }, transaction })
+    await db.Book_Cart.destroy({ where: { CartId: cart.id }, transaction })
+
+    await transaction.commit()
+    return { message: 'Order placed successfully' }
+  } catch (error) {
+    throw error
+  }
+}
+
+export const userService = { createNew, getAll, getDetail, updateDetail, deleteDetail, updatePassword, updateMe, addCartUser, getMyCart, orderCart }
