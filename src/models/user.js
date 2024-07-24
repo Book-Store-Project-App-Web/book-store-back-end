@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Order, {
         foreignKey: 'userId'
       })
+      User.hasMany(models.Import_Invoice, {
+        foreignKey: 'userId'
+      })
+      User.belongsToMany(models.Group, { through: 'Group_User' })
     }
   }
   User.init(

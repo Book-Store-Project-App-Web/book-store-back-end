@@ -221,8 +221,8 @@ const orderCart = async (userId, reqBody) => {
     order.totalOrderPrice = cart.totalCartPrice
     await order.save({ transaction })
 
-    await db.Cart.destroy({ where: { id: cart.id }, transaction })
     await db.Book_Cart.destroy({ where: { CartId: cart.id }, transaction })
+    await db.Cart.destroy({ where: { id: cart.id }, transaction })
 
     await transaction.commit()
     return { message: 'Order placed successfully' }

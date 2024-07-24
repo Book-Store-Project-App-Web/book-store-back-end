@@ -7,6 +7,7 @@ const createNew = async (reqBody) => {
       ...reqBody,
       slug: slugify(reqBody.name)
     }
+
     return await db.Book.create(newBook)
   } catch (error) {
     throw error
