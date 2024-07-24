@@ -10,15 +10,13 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Book.belongsToMany(models.Cart, { through: 'Book_Cart' })
       Book.belongsToMany(models.Order, { through: 'Book_Order' })
+      Book.belongsToMany(models.Import_Invoice, { through: 'Book_ImportInvoice' })
+      Book.belongsTo(models.Author)
     }
   }
   Book.init(
     {
       name: {
-        type: DataTypes.STRING,
-        allowNull: false
-      },
-      author: {
         type: DataTypes.STRING,
         allowNull: false
       },
@@ -35,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       slug: DataTypes.STRING,
+      image: DataTypes.STRING,
       totalRating: DataTypes.INTEGER,
       sold: DataTypes.INTEGER,
       ratingsAverage: DataTypes.DOUBLE
