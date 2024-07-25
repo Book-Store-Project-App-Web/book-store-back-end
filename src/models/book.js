@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       Book.belongsToMany(models.Order, { through: 'Book_Order' })
       Book.belongsToMany(models.Import_Invoice, { through: 'Book_ImportInvoice' })
       Book.belongsTo(models.Author)
+      Book.belongsTo(models.Category)
     }
   }
   Book.init(
