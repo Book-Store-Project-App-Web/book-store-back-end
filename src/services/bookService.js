@@ -25,7 +25,8 @@ const getDetail = async (bookId) => {
   try {
     return await db.Book.findOne({
       where: { id: bookId },
-      attributes: { exclude: ['createdAt', 'updatedAt'] }
+      attributes: { exclude: ['createdAt', 'updatedAt'] },
+      include: { model: db.Supplier }
     })
   } catch (error) {
     throw error

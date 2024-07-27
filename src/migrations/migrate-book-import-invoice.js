@@ -20,6 +20,9 @@ module.exports = {
       quantity: {
         type: Sequelize.INTEGER
       },
+      unitPrice: {
+        type: Sequelize.DOUBLE
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

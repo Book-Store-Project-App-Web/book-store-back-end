@@ -12,7 +12,7 @@ const getBooksInCartUser = async (cart) => {
     include: [
       {
         model: db.Book,
-        through: { attributes: ['quantity'] }
+        through: { attributes: ['quantity', 'unitPrice'] }
       }
     ]
   })
@@ -121,14 +121,18 @@ const addCartUser = async (userId, reqBody) => {
         [Op.and]: [{ cartId: cart.id }, { bookId }]
       }
     })
+    // Tìm sách để lấy giá
+    const book = await db.Book.findOne({ where: { id: bookId } })
 
     // --- 4: Nếu đã có Book trong Cart thì tăng số lượng lên
     if (bookCart) {
       bookCart.quantity += quantity
+      bookCart.unitPrice = (book.price * bookCart.quantity * (100 - book.discount)) / 100
       await bookCart.save()
     } else {
       // --- 5: Nếu chưa có Book trong Cart thì thêm mới vào Cart
-      await db.Book_Cart.create({ CartId: cart.id, BookId: bookId, quantity })
+      const test = (book.price * quantity * (100 - book.discount)) / 100
+      await db.Book_Cart.create({ CartId: cart.id, BookId: bookId, quantity, unitPrice: test })
     }
 
     // ---6 Tính toán tổng số lượng sản phẩm trong giỏ hàng
@@ -138,16 +142,16 @@ const addCartUser = async (userId, reqBody) => {
     let totalPrice = 0
     booksInCart.Books.forEach((book) => {
       if (book.stock < book.Book_Cart.quantity) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, `Not enough stock for ${book.name}`)
+        throw new ApiError(StatusCodes.BAD_REQUEST, `Sách ${book.name} không có sẵn`)
       }
       totalQuantity += 1
-      totalPrice += book.Book_Cart.quantity * book.price
+      totalPrice += book.Book_Cart.unitPrice
     })
-    booksInCart.totalQuantity = +totalQuantity
+    booksInCart.totalQuantity = totalQuantity
     booksInCart.totalCartPrice = totalPrice
     await booksInCart.save()
 
-    return booksInCart
+    return bookCart
   } catch (error) {
     throw error
   }
@@ -164,14 +168,14 @@ const getMyCart = async (userId) => {
       include: [
         {
           model: db.Book,
-          attributes: ['name', 'price'],
-          through: { attributes: ['quantity'] }
+          // attributes: ['name', 'price', 'discount'],
+          through: { attributes: ['quantity', 'unitPrice'] }
         }
       ]
     })
-    if (bookCart.Books.length <= 0) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Chua co san pham trong gio hang')
-    }
+    // if (bookCart.Books.length <= 0) {
+    //   throw new ApiError(StatusCodes.NOT_FOUND, 'Chua co san pham trong gio hang')
+    // }
 
     return bookCart
   } catch (error) {
@@ -231,4 +235,105 @@ const orderCart = async (userId, reqBody) => {
   }
 }
 
-export const userService = { createNew, getAll, getDetail, updateDetail, deleteDetail, updatePassword, updateMe, addCartUser, getMyCart, orderCart }
+const countQuantityCart = async (userId) => {
+  try {
+    const cart = await db.Cart.findOne({ where: { userId } })
+
+    if (!cart) {
+      return { totalQuantity: 0 }
+    }
+    return cart
+  } catch (error) {
+    throw error
+  }
+}
+
+const updateCartQuantity = async (userId, reqBody) => {
+  const { bookId, quantityChange } = reqBody
+  try {
+    const cart = await db.Cart.findOne({ where: { userId } })
+
+    let bookCart = await db.Book_Cart.findOne({
+      where: {
+        [Op.and]: [{ cartId: cart.id }, { bookId }]
+      }
+    })
+    if (!bookCart) {
+      throw new Error('Book not found in cart')
+    }
+    const book = await db.Book.findOne({ where: { id: bookId } })
+    if (!book) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Book not found')
+    }
+
+    bookCart.quantity += quantityChange
+    // if (book.stock < bookCart.quantity) {
+    //   return
+    // }
+    if (bookCart.quantity < 1) {
+      return
+    }
+    bookCart.save()
+
+    // Cập nhật số lượng
+    const discountPercent = book.discount || 0
+    const discountFactor = (100 - discountPercent) / 100
+
+    bookCart.unitPrice = book.price * bookCart.quantity * discountFactor
+    await bookCart.save()
+
+    // Cập nhật tổng tiền của giỏ hàng
+    const bookCarts = await db.Book_Cart.findAll({ where: { cartId: cart.id } })
+    const totalCartPrice = bookCarts.reduce((acc, item) => acc + item.unitPrice, 0)
+
+    cart.totalCartPrice = totalCartPrice
+    await cart.save()
+    return { bookCart, totalCartPrice }
+  } catch (error) {
+    throw error
+  }
+}
+
+const deleteCartItem = async (userId, bookId) => {
+  try {
+    const cart = await db.Cart.findOne({ where: { userId } })
+
+    await db.Book_Cart.destroy({
+      where: {
+        [Op.and]: [{ cartId: cart.id }, { bookId }]
+      }
+    })
+    const bookCarts = await db.Book_Cart.findAll({ where: { cartId: cart.id } })
+    const totalCartPrice = bookCarts.reduce((acc, item) => acc + item.unitPrice, 0)
+
+    const booksInCart = await getBooksInCartUser(cart)
+
+    booksInCart.totalCartPrice = totalCartPrice
+
+    let totalItemCart = 0
+    booksInCart.Books.forEach(() => {
+      totalItemCart += 1
+    })
+    booksInCart.totalQuantity = totalItemCart
+    await booksInCart.save()
+    return booksInCart
+  } catch (error) {
+    throw error
+  }
+}
+
+export const userService = {
+  createNew,
+  getAll,
+  getDetail,
+  updateDetail,
+  deleteDetail,
+  updatePassword,
+  updateMe,
+  addCartUser,
+  getMyCart,
+  orderCart,
+  countQuantityCart,
+  updateCartQuantity,
+  deleteCartItem
+}

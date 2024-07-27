@@ -13,7 +13,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      authorId: {
+      supplierId: {
         allowNull: false,
         type: Sequelize.INTEGER
       },
@@ -31,6 +31,14 @@ module.exports = {
       stock: {
         allowNull: false,
         type: Sequelize.INTEGER
+      },
+      pageNumber: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
+      publishingYear: {
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       slug: {
         type: Sequelize.STRING
