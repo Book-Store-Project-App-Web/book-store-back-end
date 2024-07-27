@@ -28,8 +28,10 @@ module.exports = (sequelize, DataTypes) => {
         }
       },
       quantity: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
+        type: DataTypes.INTEGER
+      },
+      unitPrice: {
+        type: DataTypes.DOUBLE
       }
     },
     {

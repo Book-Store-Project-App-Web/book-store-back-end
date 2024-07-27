@@ -92,4 +92,45 @@ const orderCart = async (req, res, next) => {
   }
 }
 
-export const userController = { createUser, getAllUser, getUser, updateUser, deleteUser, updatePassword, updateMe, addCartUser, getMyCart, orderCart }
+const countQuantityCart = async (req, res, next) => {
+  try {
+    const quantityCart = await userService.countQuantityCart(req.params.userId)
+    return res.status(StatusCodes.OK).json(quantityCart)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const updateCartQuantity = async (req, res, next) => {
+  try {
+    const cart = await userService.updateCartQuantity(req.user.id, req.body)
+    return res.status(StatusCodes.OK).json(cart)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const deleteCartItem = async (req, res, next) => {
+  try {
+    const cart = await userService.deleteCartItem(req.user.id, req.params.bookId)
+    return res.status(StatusCodes.OK).json(cart)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const userController = {
+  createUser,
+  getAllUser,
+  getUser,
+  updateUser,
+  deleteUser,
+  updatePassword,
+  updateMe,
+  addCartUser,
+  getMyCart,
+  orderCart,
+  countQuantityCart,
+  updateCartQuantity,
+  deleteCartItem
+}

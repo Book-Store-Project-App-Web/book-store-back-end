@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       Book.belongsToMany(models.Cart, { through: 'Book_Cart' })
       Book.belongsToMany(models.Order, { through: 'Book_Order' })
       Book.belongsToMany(models.Import_Invoice, { through: 'Book_ImportInvoice' })
-      Book.belongsTo(models.Author)
+      Book.belongsTo(models.Supplier)
       Book.belongsTo(models.Category)
     }
   }
@@ -30,6 +30,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       stock: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      pageNumber: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      publishingYear: {
         type: DataTypes.INTEGER,
         allowNull: false
       },

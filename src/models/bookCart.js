@@ -30,6 +30,9 @@ module.exports = (sequelize, DataTypes) => {
       quantity: {
         type: DataTypes.INTEGER,
         defaultValue: 0
+      },
+      unitPrice: {
+        type: DataTypes.DOUBLE
       }
     },
     {
