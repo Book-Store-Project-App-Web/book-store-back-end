@@ -33,6 +33,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
       },
+      author: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
       pageNumber: {
         type: DataTypes.INTEGER,
         allowNull: false

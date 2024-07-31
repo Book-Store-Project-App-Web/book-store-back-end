@@ -13,9 +13,16 @@ const createNew = async (reqBody) => {
     throw error
   }
 }
-const getAll = async () => {
+const getAll = async (page, limit) => {
+  const offset = (page - 1) * limit
   try {
-    return await db.Book.findAll({ attributes: { exclude: ['createdAt', 'updatedAt'] } })
+    const { count, rows } = await db.Book.findAndCountAll({
+      offset,
+      limit,
+      attributes: { exclude: ['createdAt', 'updatedAt'] }
+    })
+    let totalPages = Math.ceil(count / limit)
+    return { totalRows: count, totalPages, books: rows }
   } catch (error) {
     throw error
   }
@@ -25,8 +32,8 @@ const getDetail = async (bookId) => {
   try {
     return await db.Book.findOne({
       where: { id: bookId },
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
-      include: { model: db.Supplier }
+      // attributes: { exclude: ['createdAt', 'updatedAt'] },
+      include: [{ model: db.Supplier }, { model: db.Category }]
     })
   } catch (error) {
     throw error

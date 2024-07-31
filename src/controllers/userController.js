@@ -119,6 +119,15 @@ const deleteCartItem = async (req, res, next) => {
   }
 }
 
+const getOrder = async (req, res, next) => {
+  try {
+    const orders = await userService.getOrder(req.user.id)
+    return res.status(StatusCodes.OK).json(orders)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   createUser,
   getAllUser,
@@ -132,5 +141,6 @@ export const userController = {
   orderCart,
   countQuantityCart,
   updateCartQuantity,
-  deleteCartItem
+  deleteCartItem,
+  getOrder
 }
