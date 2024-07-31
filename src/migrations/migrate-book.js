@@ -32,6 +32,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER
       },
+      author: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       pageNumber: {
         type: Sequelize.INTEGER,
         allowNull: false

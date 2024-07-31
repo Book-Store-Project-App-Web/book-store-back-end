@@ -18,6 +18,18 @@ const getBooksInCartUser = async (cart) => {
   })
 }
 
+const getBooksInOrder = async (userId) => {
+  return await db.Order.findAll({
+    where: { userId },
+    include: [
+      {
+        model: db.Book,
+        through: { attributes: ['quantity', 'unitPrice'] }
+      }
+    ]
+  })
+}
+
 const createNew = async (reqBody) => {
   try {
     const newUser = {
@@ -123,10 +135,15 @@ const addCartUser = async (userId, reqBody) => {
     })
     // Tìm sách để lấy giá
     const book = await db.Book.findOne({ where: { id: bookId } })
-
+    if (book.stock < quantity) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, `* Sách ${book.name} chỉ còn tồn kho ${book.stock}`)
+    }
     // --- 4: Nếu đã có Book trong Cart thì tăng số lượng lên
     if (bookCart) {
       bookCart.quantity += quantity
+      if (book.stock < bookCart.quantity) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, `* Sách ${book.name} chỉ còn tồn kho ${book.stock}`)
+      }
       bookCart.unitPrice = (book.price * bookCart.quantity * (100 - book.discount)) / 100
       await bookCart.save()
     } else {
@@ -141,9 +158,6 @@ const addCartUser = async (userId, reqBody) => {
     let totalQuantity = 0
     let totalPrice = 0
     booksInCart.Books.forEach((book) => {
-      if (book.stock < book.Book_Cart.quantity) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, `Sách ${book.name} không có sẵn`)
-      }
       totalQuantity += 1
       totalPrice += book.Book_Cart.unitPrice
     })
@@ -206,19 +220,17 @@ const orderCart = async (userId, reqBody) => {
     const booksInCart = await getBooksInCartUser(cart)
 
     for (const book of booksInCart.Books) {
-      if (book.stock < book.Book_Cart.quantity) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, `Not enough stock for ${book.name}`)
-      }
-
       await db.Book_Order.create(
         {
           OrderId: order.id,
           BookId: book.id,
-          quantity: book.Book_Cart.quantity
+          quantity: book.Book_Cart.quantity,
+          unitPrice: book.Book_Cart.unitPrice
         },
         { transaction }
       )
       book.stock -= book.Book_Cart.quantity
+      book.sold += book.Book_Cart.quantity
       await book.save({ transaction })
     }
 
@@ -229,7 +241,7 @@ const orderCart = async (userId, reqBody) => {
     await db.Cart.destroy({ where: { id: cart.id }, transaction })
 
     await transaction.commit()
-    return { message: 'Order placed successfully' }
+    return { message: 'Đặt hàng thành công' }
   } catch (error) {
     throw error
   }
@@ -267,11 +279,11 @@ const updateCartQuantity = async (userId, reqBody) => {
     }
 
     bookCart.quantity += quantityChange
-    // if (book.stock < bookCart.quantity) {
-    //   return
-    // }
+    if (book.stock < bookCart.quantity) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, `* Sách ${book.name} không có sẵn`)
+    }
     if (bookCart.quantity < 1) {
-      return
+      bookCart.quantity = 1
     }
     bookCart.save()
 
@@ -322,6 +334,20 @@ const deleteCartItem = async (userId, bookId) => {
   }
 }
 
+const getOrder = async (userId) => {
+  try {
+    let order = await db.Order.findAll({ where: { userId } })
+    if (!order) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Order not found!')
+    }
+
+    const inforMyOrder = await getBooksInOrder(userId)
+
+    return inforMyOrder
+  } catch (error) {
+    throw error
+  }
+}
 export const userService = {
   createNew,
   getAll,
@@ -335,5 +361,6 @@ export const userService = {
   orderCart,
   countQuantityCart,
   updateCartQuantity,
-  deleteCartItem
+  deleteCartItem,
+  getOrder
 }
