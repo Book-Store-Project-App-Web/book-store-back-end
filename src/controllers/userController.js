@@ -128,6 +128,24 @@ const getOrder = async (req, res, next) => {
   }
 }
 
+const getPurchases = async (req, res, next) => {
+  try {
+    const purchases = await userService.getPurchases()
+    return res.status(StatusCodes.OK).json(purchases)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const recommendSystem = async (req, res, next) => {
+  try {
+    const purchases = await userService.recommendSystem(req.user.id, req.body)
+    return res.status(StatusCodes.OK).json(purchases)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   createUser,
   getAllUser,
@@ -142,5 +160,7 @@ export const userController = {
   countQuantityCart,
   updateCartQuantity,
   deleteCartItem,
-  getOrder
+  getOrder,
+  getPurchases,
+  recommendSystem
 }
