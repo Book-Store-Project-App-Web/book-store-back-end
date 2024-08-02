@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import { Op } from 'sequelize'
 import db from '~/models'
 import ApiError from '~/utils/ApiError'
+import { recommendItems } from '~/utils/recommendSystem'
 
 const getBooksInCartUser = async (cart) => {
   return await db.Cart.findOne({
@@ -348,6 +349,55 @@ const getOrder = async (userId) => {
     throw error
   }
 }
+
+const getPurchases = async () => {
+  try {
+    const orders = await db.Order.findAll({
+      include: [
+        { model: db.User, attributes: ['id'] },
+        { model: db.Book, attributes: ['id'] }
+      ]
+    })
+
+    const purchases = []
+    orders.forEach((order) => {
+      const userId = order.userId
+      order.Books.map((item) => {
+        purchases.push({ user_id: userId, item_id: item.id })
+      })
+    })
+
+    return purchases
+  } catch (error) {
+    throw error
+  }
+}
+
+const recommendSystem = async (userId, reqBody) => {
+  try {
+    const { numNeighbors, numRecommendations } = reqBody
+    const orders = await db.Order.findAll({
+      include: [
+        { model: db.User, attributes: ['id'] },
+        { model: db.Book, attributes: ['id'] }
+      ]
+    })
+
+    const purchases = []
+    orders.forEach((order) => {
+      const userId = order.userId
+      order.Books.map((item) => {
+        purchases.push({ user_id: userId, item_id: item.id })
+      })
+    })
+
+    const recommendations = recommendItems(purchases, userId, numNeighbors, numRecommendations)
+    return recommendations
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   createNew,
   getAll,
@@ -362,5 +412,7 @@ export const userService = {
   countQuantityCart,
   updateCartQuantity,
   deleteCartItem,
-  getOrder
+  getOrder,
+  getPurchases,
+  recommendSystem
 }
